@@ -1,29 +1,33 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import $ from "jquery";
+import shouldAddBracket from "./utils/shouldAddBracket";
+
+// prettier-ignore
+const NUMBERS = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "+", "-", "*", "/", "Enter", "Escape"];
+// prettier-ignore
+const idsOfNums = ["zero","one","two","three","four","five","six","seven","eight","nine","decimal", "add", "subtract", "multiply", "divide", "equals", "clear"];
 
 function App() {
-  const [currentElement, setElement] = useState("0");
+  const [currentElement, setCurrentElement] = useState("0");
   const [allElements, setAllElements] = useState([]);
-  const [forShowing, setForShowing] = useState("");
-  // prettier-ignore
-  const numbers = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ".", "+", "-", "*", "/", "Enter", "Escape"];
-  // prettier-ignore
-  const idsOfNums = ["zero","one","two","three","four","five","six","seven","eight","nine","decimal", "add", "subtract", "multiply", "divide", "equals", "clear"];
+  const [currentDisplay, setCurrentDisplay] = useState("");
 
-  // ! For adding keypress event listeners
+  // ! For handling each keypress event
   const handleUserKeyPress = useCallback((event) => {
-    event.preventDefault();
-    const { key } = event;
-    if (numbers.indexOf(key) !== -1) {
-      var index = numbers.findIndex((x) => x === key);
-      document.getElementById(idsOfNums[index]).click();
-      $("#" + idsOfNums[index]).addClass("buttonEventClass");
+    const pressedKey = event.key;
+    if (NUMBERS.indexOf(pressedKey) !== -1) {
+      const currentIndex = NUMBERS.findIndex((x) => x === pressedKey);
+      document.getElementById(idsOfNums[currentIndex]).click();
+      document
+        .getElementById(idsOfNums[currentIndex])
+        .classList.add("buttonEventClass");
       setTimeout(function () {
-        $("#" + idsOfNums[index]).removeClass("buttonEventClass");
+        document
+          .getElementById(idsOfNums[currentIndex])
+          .classList.remove("buttonEventClass");
       }, 100);
     }
-    // eslint-disable-next-line
   }, []);
+  // ! Adding and removing keydown event listeners
   useEffect(() => {
     window.addEventListener("keydown", handleUserKeyPress);
 
@@ -32,206 +36,207 @@ function App() {
     };
   }, [handleUserKeyPress]);
 
+  useEffect(() => {
+    setCurrentDisplay(allElements.join(""));
+  }, [allElements]);
+
   // ! For managing number inputs
   const manageNumbers = (someNum) => {
-    if (
-      typeof currentElement === "number" &&
-      isNaN(parseFloat(currentElement))
-    ) {
-      clearState();
-      setElement("");
-    }
-    if (forShowing[forShowing.length - 2] !== "=") {
-      if (forShowing === "") {
-        setForShowing(someNum);
-      }
-      if (
-        currentElement.length === 1 &&
-        someNum !== "." &&
-        (currentElement.charAt(0) === "0" ||
-          currentElement.charAt(0) === "+" ||
-          currentElement.charAt(0) === "-" ||
-          currentElement.charAt(0) === "/" ||
-          currentElement.charAt(0) === "*")
-      ) {
-        setElement(String(someNum));
-      } else if (
-        currentElement.length === 1 &&
-        (currentElement.charAt(0) === 0 ||
-          currentElement.charAt(0) === "+" ||
-          currentElement.charAt(0) === "-" ||
-          currentElement.charAt(0) === "/" ||
-          currentElement.charAt(0) === "*") &&
-        someNum === "."
-      ) {
-        setElement("0.");
-      } else if (
-        someNum === "." &&
-        parseFloat(currentElement) % 1 === 0 &&
-        currentElement.slice(-1) !== "."
-      ) {
-        setElement((prevElement) => `${prevElement}${someNum}`);
-      } else if (someNum !== ".") {
-        setElement((prevElement) => `${prevElement}${someNum}`);
-      }
-    } else {
-      clearState();
-      setElement(someNum);
-      setForShowing(someNum);
-    }
+    setAllElements((prevElements) => [...prevElements, someNum]);
+    // console.log(currentElement);
+    // if (
+    //   typeof currentElement === "number" &&
+    //   isNaN(parseFloat(currentElement))
+    // ) {
+    //   clearState();
+    //   setElement("");
+    // }
+    // if (currentDisplay[currentDisplay.length - 2] !== "=") {
+    //   if (currentDisplay === "") {
+    //     setCurrentDisplay(someNum);
+    //   }
+    //   if (
+    //     currentElement.length === 1 &&
+    //     someNum !== "." &&
+    //     (currentElement.charAt(0) === "0" ||
+    //       currentElement.charAt(0) === "+" ||
+    //       currentElement.charAt(0) === "-" ||
+    //       currentElement.charAt(0) === "/" ||
+    //       currentElement.charAt(0) === "*")
+    //   ) {
+    //     setCurrentElement(String(someNum));
+    //   } else if (
+    //     currentElement.length === 1 &&
+    //     (currentElement.charAt(0) === 0 ||
+    //       currentElement.charAt(0) === "+" ||
+    //       currentElement.charAt(0) === "-" ||
+    //       currentElement.charAt(0) === "/" ||
+    //       currentElement.charAt(0) === "*") &&
+    //     someNum === "."
+    //   ) {
+    //     setCurrentElement("0.");
+    //   } else if (
+    //     someNum === "." &&
+    //     parseFloat(currentElement) % 1 === 0 &&
+    //     currentElement.slice(-1) !== "."
+    //   ) {
+    //     setCurrentElement((prevElement) => `${prevElement}${someNum}`);
+    //   } else if (someNum !== ".") {
+    //     setCurrentElement((prevElement) => `${prevElement}${someNum}`);
+    //   }
+    // } else {
+    //   clearState();
+    //   setCurrentElement(someNum);
+    // }
   };
-  // ! For live update
-  const loaded = useRef(false);
-  useEffect(() => {
-    if (loaded.current) {
-      if (
-        typeof currentElement === "number" &&
-        isNaN(parseFloat(currentElement))
-      ) {
-        setForShowing("NaN");
-        return;
-      }
-      if (forShowing[forShowing.length - 1] === currentElement) {
-        return;
-      }
-      if (forShowing[forShowing.length - 2] !== "=") {
-        if (
-          (currentElement !== "+" &&
-            currentElement !== "-" &&
-            currentElement !== "/" &&
-            currentElement !== "*") ||
-          currentElement.charAt(currentElement.length - 1) === "."
-        ) {
-          setForShowing([...allElements, currentElement]);
-        } else {
-          setForShowing([...allElements]);
-        }
-      } else {
-        setForShowing([...allElements]);
-      }
-    } else {
-      loaded.current = true;
-    }
 
-    // eslint-disable-next-line
-  }, [currentElement, allElements]);
+  // // ! For live update
+  // const loaded = useRef(false);
+  // useEffect(() => {
+  //   if (loaded.current) {
+  //     if (
+  //       typeof currentElement === "number" &&
+  //       isNaN(parseFloat(currentElement))
+  //     ) {
+  //       setCurrentDisplay("NaN");
+  //       return;
+  //     }
+  //     if (currentDisplay[currentDisplay.length - 1] === currentElement) {
+  //       return;
+  //     }
+  //     if (currentDisplay[currentDisplay.length - 2] !== "=") {
+  //       if (
+  //         (currentElement !== "+" &&
+  //           currentElement !== "-" &&
+  //           currentElement !== "/" &&
+  //           currentElement !== "*") ||
+  //         currentElement.charAt(currentElement.length - 1) === "."
+  //       ) {
+  //         setCurrentDisplay([...allElements, currentElement]);
+  //       } else {
+  //         setCurrentDisplay([...allElements]);
+  //       }
+  //     } else {
+  //       setCurrentDisplay([...allElements]);
+  //     }
+  //   } else {
+  //     loaded.current = true;
+  //   }
+  // }, [currentElement, currentDisplay, allElements]);
 
-  // ! For managing operator inputs
+  // // ! For managing operator inputs
   const manageOperators = (someVal) => {
-    if (
-      typeof currentElement === "number" &&
-      isNaN(parseFloat(currentElement))
-    ) {
-      return;
-    }
-    if (forShowing[forShowing.length - 2] !== "=") {
-      if (
-        (allElements[allElements.length - 2] === "+" ||
-          allElements[allElements.length - 2] === "-" ||
-          allElements[allElements.length - 2] === "/" ||
-          allElements[allElements.length - 2] === "*") &&
-        (currentElement === "+" ||
-          currentElement === "-" ||
-          currentElement === "/" ||
-          currentElement === "*") &&
-        allElements[allElements.length - 2].charAt(0) !== "(" &&
-        someVal !== "-"
-      ) {
-        setAllElements(allElements.pop());
-      }
-      var someCurrentElement = "";
-      if (currentElement.slice(-1) === ".") {
-        someCurrentElement = currentElement.slice(0, -1);
-      } else {
-        someCurrentElement = currentElement;
-      }
-
-      var someElement = "";
-      if (
-        allElements[allElements.length - 1] === "(-" ||
-        ((String(allElements[allElements.length - 2]).charAt(0) === "(" ||
-          String(allElements[allElements.length - 3]).charAt(0) === "(") &&
-          String(allElements[allElements.length - 1]).charAt(0) === ")" &&
-          someVal !== "-")
-      ) {
-        someElement = ")" + someVal;
-      } else {
-        someElement = someVal;
-      }
-      if (someVal !== "-") {
-        if (
-          (allElements[allElements.length - 2] === ")+" ||
-            allElements[allElements.length - 2] === ")-" ||
-            allElements[allElements.length - 2] === ")*" ||
-            allElements[allElements.length - 2] === ")/") &&
-          allElements[allElements.length - 1] === "(-" &&
-          (currentElement === "+" ||
-            currentElement === "-" ||
-            currentElement === "/" ||
-            currentElement === "*")
-        ) {
-          setAllElements(allElements.pop());
-          setAllElements([...allElements, someCurrentElement, someVal]);
-        }
-      }
-      if (someVal !== "-") {
-        if (
-          currentElement.charAt(currentElement.length - 1) === "+" ||
-          currentElement.charAt(currentElement.length - 1) === "-" ||
-          currentElement.charAt(currentElement.length - 1) === "/" ||
-          currentElement.charAt(currentElement.length - 1) === "*"
-        ) {
-          setAllElements(allElements.pop());
-          setAllElements([...allElements, someElement]);
-          setElement(someVal);
-        } else {
-          setAllElements([...allElements, someCurrentElement, someElement]);
-          setElement(someVal);
-        }
-      } else {
-        if (
-          (currentElement.charAt(currentElement.length - 1) === "+" ||
-            currentElement.charAt(currentElement.length - 1) === "-" ||
-            currentElement.charAt(currentElement.length - 1) === "/" ||
-            currentElement.charAt(currentElement.length - 1) === "*") &&
-          allElements[allElements.length - 1] !== "(-"
-        ) {
-          setAllElements([...allElements, `(${someElement}`]);
-          setElement(someVal);
-        } else {
-          if (
-            currentElement.charAt(currentElement.length - 1) === "+" ||
-            currentElement.charAt(currentElement.length - 1) === "-" ||
-            currentElement.charAt(currentElement.length - 1) === "/" ||
-            currentElement.charAt(currentElement.length - 1) === "*"
-          ) {
-            setAllElements([...allElements]);
-            setElement(someVal);
-          } else {
-            setAllElements([...allElements, someCurrentElement, someElement]);
-            setElement(someVal);
-          }
-        }
-      }
-      if (
-        someElement === ")" + someVal &&
-        String(allElements[allElements.length - 1]).charAt(0) === ")"
-      ) {
-        setAllElements([...allElements, someCurrentElement, someVal]);
-      }
-    } else {
-      setAllElements([forShowing[forShowing.length - 1], someVal]);
-
-      setElement(someVal);
-    }
+    setAllElements((prevElements) => [...prevElements, someVal]);
+    //   if (
+    //     typeof currentElement === "number" &&
+    //     isNaN(parseFloat(currentElement))
+    //   ) {
+    //     return;
+    //   }
+    //   if (currentDisplay[currentDisplay.length - 2] !== "=") {
+    //     if (
+    //       (allElements[allElements.length - 2] === "+" ||
+    //         allElements[allElements.length - 2] === "-" ||
+    //         allElements[allElements.length - 2] === "/" ||
+    //         allElements[allElements.length - 2] === "*") &&
+    //       (currentElement === "+" ||
+    //         currentElement === "-" ||
+    //         currentElement === "/" ||
+    //         currentElement === "*") &&
+    //       allElements[allElements.length - 2].charAt(0) !== "(" &&
+    //       someVal !== "-"
+    //     ) {
+    //       setAllElements(allElements.pop());
+    //     }
+    //     var someCurrentElement = "";
+    //     if (currentElement.slice(-1) === ".") {
+    //       someCurrentElement = currentElement.slice(0, -1);
+    //     } else {
+    //       someCurrentElement = currentElement;
+    //     }
+    //     var someElement = "";
+    //     if (
+    //       allElements[allElements.length - 1] === "(-" ||
+    //       ((String(allElements[allElements.length - 2]).charAt(0) === "(" ||
+    //         String(allElements[allElements.length - 3]).charAt(0) === "(") &&
+    //         String(allElements[allElements.length - 1]).charAt(0) === ")" &&
+    //         someVal !== "-")
+    //     ) {
+    //       someElement = ")" + someVal;
+    //     } else {
+    //       someElement = someVal;
+    //     }
+    //     if (someVal !== "-") {
+    //       if (
+    //         (allElements[allElements.length - 2] === ")+" ||
+    //           allElements[allElements.length - 2] === ")-" ||
+    //           allElements[allElements.length - 2] === ")*" ||
+    //           allElements[allElements.length - 2] === ")/") &&
+    //         allElements[allElements.length - 1] === "(-" &&
+    //         (currentElement === "+" ||
+    //           currentElement === "-" ||
+    //           currentElement === "/" ||
+    //           currentElement === "*")
+    //       ) {
+    //         setAllElements(allElements.pop());
+    //         setAllElements([...allElements, someCurrentElement, someVal]);
+    //       }
+    //     }
+    //     if (someVal !== "-") {
+    //       if (
+    //         currentElement.charAt(currentElement.length - 1) === "+" ||
+    //         currentElement.charAt(currentElement.length - 1) === "-" ||
+    //         currentElement.charAt(currentElement.length - 1) === "/" ||
+    //         currentElement.charAt(currentElement.length - 1) === "*"
+    //       ) {
+    //         setAllElements(allElements.pop());
+    //         setAllElements([...allElements, someElement]);
+    //         setCurrentElement(someVal);
+    //       } else {
+    //         setAllElements([...allElements, someCurrentElement, someElement]);
+    //         setCurrentElement(someVal);
+    //       }
+    //     } else {
+    //       if (
+    //         (currentElement.charAt(currentElement.length - 1) === "+" ||
+    //           currentElement.charAt(currentElement.length - 1) === "-" ||
+    //           currentElement.charAt(currentElement.length - 1) === "/" ||
+    //           currentElement.charAt(currentElement.length - 1) === "*") &&
+    //         allElements[allElements.length - 1] !== "(-"
+    //       ) {
+    //         setAllElements([...allElements, `(${someElement}`]);
+    //         setCurrentElement(someVal);
+    //       } else {
+    //         if (
+    //           currentElement.charAt(currentElement.length - 1) === "+" ||
+    //           currentElement.charAt(currentElement.length - 1) === "-" ||
+    //           currentElement.charAt(currentElement.length - 1) === "/" ||
+    //           currentElement.charAt(currentElement.length - 1) === "*"
+    //         ) {
+    //           setAllElements([...allElements]);
+    //           setCurrentElement(someVal);
+    //         } else {
+    //           setAllElements([...allElements, someCurrentElement, someElement]);
+    //           setCurrentElement(someVal);
+    //         }
+    //       }
+    //     }
+    //     if (
+    //       someElement === ")" + someVal &&
+    //       String(allElements[allElements.length - 1]).charAt(0) === ")"
+    //     ) {
+    //       setAllElements([...allElements, someCurrentElement, someVal]);
+    //     }
+    //   } else {
+    //     setAllElements([currentDisplay[currentDisplay.length - 1], someVal]);
+    //     setCurrentElement(someVal);
+    //   }
   };
   // ! Clearing the state - "AC" button
   const clearState = () => {
-    // if (String(currentElement) !== "0") {
-    setElement("0");
-    // }
-    if (currentElement === "0" && String(setForShowing) === "0,=,0") {
-      setForShowing("");
+    setCurrentElement("0");
+    if (currentElement === "0" && String(setCurrentDisplay) === "0,=,0") {
+      setCurrentDisplay("");
     }
     if (allElements.length !== 0) {
       setAllElements([]);
@@ -240,128 +245,34 @@ function App() {
 
   // ! Getting the result from input
   const equalFunc = () => {
-    if (forShowing.length !== 0 && forShowing !== 0) {
-      if (forShowing[forShowing.length - 2] !== "=") {
-        const helpArray = forShowing;
-        if (
-          helpArray[helpArray.length - 1].charAt(
-            helpArray[helpArray.length - 1].length - 1
-          ) === "."
-        ) {
-          helpArray[helpArray.length - 1] = helpArray[
-            helpArray.length - 1
-          ].substring(0, helpArray[helpArray.length - 1].length - 1);
-        }
-        if (helpArray[helpArray.length - 2] === "(-") {
-          helpArray.push(")");
-        }
-        if (helpArray[helpArray.length - 1] === "(-") {
-          helpArray.pop();
-        }
-        if (helpArray[helpArray.length - 1].charAt(0) === ")") {
-          helpArray[helpArray.length - 1] = helpArray[
-            helpArray.length - 1
-          ].substring(0, 1);
-        }
+    console.log(currentDisplay);
+    let expForEval = currentDisplay;
+    const lastItem = Number(expForEval.slice(-1)[0]);
 
-        if (
-          helpArray[helpArray.length - 1].charAt(0) === "+" ||
-          helpArray[helpArray.length - 1].charAt(0) === "-" ||
-          helpArray[helpArray.length - 1].charAt(0) === "/" ||
-          helpArray[helpArray.length - 1].charAt(0) === "*"
-        ) {
-          helpArray.pop();
-        }
-
-        const toUseForShowing = helpArray.slice();
-
-        for (var i = 0; i < helpArray.length; i++) {
-          if (helpArray[i] === "(-") {
-            helpArray[i + 1] = -1 * parseFloat(helpArray[i + 1]);
-            if (helpArray[i + 2] === ")") {
-              helpArray.pop();
-            } else {
-              helpArray[i + 2] = helpArray[i + 2].substring(1);
-            }
-            helpArray.splice(i, 1);
-            i = -1;
-            continue;
-          }
-        }
-
-        for (i = 0; i < helpArray.length; i++) {
-          if (helpArray[i] === "/") {
-            var helpVar =
-              parseFloat(helpArray[i - 1]) / parseFloat(helpArray[i + 1]);
-            if (helpArray[i + 2]) {
-              helpArray.splice(i + 2, 0, helpVar);
-            } else {
-              helpArray.push(helpVar);
-            }
-
-            helpArray.splice(i - 1, 3);
-            i = -1;
-          }
-        }
-        for (i = 0; i < helpArray.length; i++) {
-          if (helpArray[i] === "*") {
-            helpVar =
-              parseFloat(helpArray[i - 1]) * parseFloat(helpArray[i + 1]);
-            if (helpArray[i + 2]) {
-              helpArray.splice(i + 2, 0, helpVar);
-            } else {
-              helpArray.push(helpVar);
-            }
-            helpArray.splice(i - 1, 3);
-            i = -1;
-          }
-        }
-        for (i = 0; i < helpArray.length; i++) {
-          if (helpArray[i] === "-") {
-            helpVar =
-              parseFloat(helpArray[i - 1]) - parseFloat(helpArray[i + 1]);
-            if (helpArray[i + 2]) {
-              helpArray.splice(i + 2, 0, helpVar);
-            } else {
-              helpArray.push(helpVar);
-            }
-            helpArray.splice(i - 1, 3);
-
-            i = -1;
-          }
-        }
-        for (i = 0; i < helpArray.length; i++) {
-          if (helpArray[i] === "+") {
-            helpVar =
-              parseFloat(helpArray[i - 1]) + parseFloat(helpArray[i + 1]);
-            if (helpArray[i + 2]) {
-              helpArray.splice(i + 2, 0, helpVar);
-            } else {
-              helpArray.push(helpVar);
-            }
-            helpArray.splice(i - 1, 3);
-            i = -1;
-          }
-        }
-
-        if (parseFloat(helpArray[0]) % 1 !== 0) {
-          helpArray[0] = +parseFloat(helpArray[0]).toFixed(10);
-          helpArray[0].toString();
-        }
-        setForShowing([toUseForShowing, "=", helpArray[0]]);
-        setElement(helpArray[0]);
-      }
+    if (!lastItem && lastItem !== 0) expForEval = expForEval.slice(0, -1);
+    if (shouldAddBracket(expForEval)) expForEval.concat(")");
+    let solution;
+    try {
+      // eslint-disable-next-line
+      solution = eval(expForEval);
+      setCurrentDisplay([expForEval, "=", solution].join(""));
+    } catch {
+      solution = "Not a valid input";
+      setCurrentDisplay("");
+      setAllElements([]);
     }
+    setCurrentElement(solution);
   };
+
   return (
     <div>
       <div className="allElementWrapper">
         <div className="forDisplayingCurrentAllValues">
           <div className="allValuesDisplay">
             {" "}
-            {String(forShowing) === "0"
+            {String(currentDisplay) === "0"
               ? ""
-              : String(forShowing)
+              : String(currentDisplay)
                   .replaceAll(",", "")
                   .replaceAll("*", `\u22C5`) //\u00d7 ! (code for x operator if you wish)
                   .replaceAll("/", `\u00f7`)}
