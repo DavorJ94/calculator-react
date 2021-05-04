@@ -60,6 +60,7 @@ function App() {
   const manageInputNumber = (input) => {
     if (!shouldDisplayUpdate) clearState();
     if (input === "." && currentElement.includes(".")) return;
+    if (input === "0" && currentElement === "0") return;
     setAllElements((prevNumber) =>
       (prevNumber.slice(-1) === " " || prevNumber.slice(-1) === "") &&
       input === "."
