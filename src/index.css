@@ -20,7 +20,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #005392;
+  background-image: url("./background-image.jpg");
 }
 
 .allElementWrapper {
@@ -35,7 +35,7 @@ body {
   flex-direction: column;
   padding: 8px;
   border-style: outset;
-  box-shadow: 10px 5px 60px 10px #0ff;
+  box-shadow: 10px 5px 55px 4px rgb(107, 101, 101);
 }
 .forDisplayingCurrentAllValues {
   width: 100%;
