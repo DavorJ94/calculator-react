@@ -96,7 +96,7 @@ body {
   color: white;
   transform: scale(1.08);
 }
-.grid-item-AC {
+.grid-item-Escape {
   grid-area: AC;
   background-color: #a52626;
 }
@@ -143,7 +143,7 @@ body {
 .grid-item-3 {
   grid-area: three;
 }
-.grid-item-\= {
+.grid-item-Enter {
   grid-area: equal;
   background-color: #006da3;
 }
