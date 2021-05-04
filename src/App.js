@@ -180,7 +180,7 @@ function App() {
       </div>
       <div>
         <h1 className="designBy">
-          Design and code by{" "}
+          Designed and coded by{" "}
           <a
             href="https://www.linkedin.com/in/davor-jovanovi%C4%87/"
             rel="noreferrer"

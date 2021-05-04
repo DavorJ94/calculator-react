@@ -177,6 +177,11 @@ body {
   color: white;
   text-decoration: none;
 }
+
+.designBy a:hover {
+  color: greenyellow;
+  text-decoration: underline;
+}
 @media (max-width: 500px) {
   .allElementWrapper {
     margin-top: 20px;
