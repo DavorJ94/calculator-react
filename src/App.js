@@ -65,6 +65,8 @@ function App() {
       (prevNumber.slice(-1) === " " || prevNumber.slice(-1) === "") &&
       input === "."
         ? prevNumber.concat("0" + input)
+        : prevNumber.slice(-1) === " " && input === "0"
+        ? prevNumber.concat(input + ".")
         : prevNumber.concat(input)
     );
 
